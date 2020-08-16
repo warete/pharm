@@ -1,4 +1,4 @@
-package main
+package drugs_import
 
 type DrugsImporter interface {
 	Run() error

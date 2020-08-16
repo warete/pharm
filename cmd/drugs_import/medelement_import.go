@@ -1,4 +1,4 @@
-package main
+package drugs_import
 
 import (
 	"encoding/json"
