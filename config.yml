@@ -1,0 +1,6 @@
+db:
+  type: "mysql"
+  user: "pharm"
+  password: "password"
+  dbname: "pharm"
+  host: "mysql"
