@@ -1,0 +1,19 @@
+version: '3'
+volumes:
+  mysql_data:
+services:
+  mysql:
+    image: percona:5.7-centos
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+    environment:
+      - MYSQL_USER=pharm
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=pharm
+      - MYSQL_ROOT_PASSWORD=password
+    restart: always
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8888:8080
