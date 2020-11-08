@@ -17,13 +17,6 @@ func main() {
 				Name:   "drugs-import",
 				Usage:  "start app in drugs import mode",
 				Action: drugs_import.Cmd,
-				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:    "config",
-						Usage:   "set config file",
-						Aliases: []string{"c"},
-					},
-				},
 			},
 		},
 	}

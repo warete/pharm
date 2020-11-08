@@ -1,15 +1,11 @@
 package drugs_import
 
 import (
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
-	"github.com/warete/pharm/cmd/pharm/repository/drug"
-	"github.com/warete/pharm/config"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -19,37 +15,20 @@ import (
 )
 
 //Конструктор
-func Init(serviceUrl string, requestParams map[string]string, appConfig *config.Config) (*MedElementImporter, error) {
-	connection, err := sql.Open(
-		appConfig.DB.Type,
-		fmt.Sprintf(
-			"%s:%s@tcp(%s)/%s",
-			appConfig.DB.User,
-			appConfig.DB.Password,
-			appConfig.DB.Host,
-			appConfig.DB.DBName,
-		),
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer connection.Close()
-
+func NewImporter(serviceUrl string, requestParams map[string]string) (*MedElementImporter, error) {
 	return &MedElementImporter{
 		serviceUrl:      serviceUrl,
 		requestParams:   requestParams,
 		maxElementCount: 0,
 		timeoutSeconds:  3,
 		timeoutItemsCnt: 1500,
-		AppConfig:       appConfig,
-		DBConnection:    connection,
 	}, nil
 }
 
 //Запускает импорт
 func (i *MedElementImporter) Run() error {
 	//Мапа со всеми лекарствами
-	drugItems := make(map[string]*drug.Drug)
+	drugItems := make(map[string]*Drug)
 	//Мьютекс для конкурентной записи в мапу
 	drugItemsMutex := sync.RWMutex{}
 
@@ -139,7 +118,7 @@ func (i *MedElementImporter) processData(data string) *MedElementResponse {
 }
 
 //Парсинг лекарств
-func (i *MedElementImporter) parseItemsFromData(data *MedElementResponse) ([]*drug.Drug, error) {
+func (i *MedElementImporter) parseItemsFromData(data *MedElementResponse) ([]*Drug, error) {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(data.Data))
 	if err != nil {
 		return nil, err
@@ -158,9 +137,9 @@ func (i *MedElementImporter) parseItemsFromData(data *MedElementResponse) ([]*dr
 	}
 
 	//Ищем товары
-	var drugs []*drug.Drug
+	var drugs []*Drug
 	doc.Find(".row.results__result").Each(func(i int, s *goquery.Selection) {
-		drugElement := &drug.Drug{}
+		drugElement := &Drug{}
 		drugElement.Name = s.Find("a.results__title-link").Text()
 		s.Find("span.text-muted").Each(func(i int, s *goquery.Selection) {
 			nodeText := strings.TrimSpace(s.Text())
@@ -173,7 +152,6 @@ func (i *MedElementImporter) parseItemsFromData(data *MedElementResponse) ([]*dr
 		})
 		//Сгенерим uuid
 		drugElement.Guid = uuid.New().String()
-		drugElement.Active = true
 		drugs = append(drugs, drugElement)
 	})
 
@@ -181,7 +159,7 @@ func (i *MedElementImporter) parseItemsFromData(data *MedElementResponse) ([]*dr
 }
 
 //Обёртка для получения среза лекарств
-func (i *MedElementImporter) getDrugs(skip int) ([]*drug.Drug, error) {
+func (i *MedElementImporter) getDrugs(skip int) ([]*Drug, error) {
 	customParams := make(map[string]string)
 	for key, value := range i.requestParams {
 		customParams[key] = value
@@ -199,12 +177,4 @@ func (i *MedElementImporter) getDrugs(skip int) ([]*drug.Drug, error) {
 	}
 
 	return drugs, nil
-}
-
-func (i *MedElementImporter) GetAll() ([]*drug.Drug, error) {
-	drugRepo, err := drug.New(i.DBConnection)
-	if err != nil {
-		return nil, err
-	}
-	return drugRepo.GetAllActiveDrugs()
 }
