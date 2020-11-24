@@ -127,7 +127,7 @@ func (i *MedElementImporter) parseItemsFromData(data *MedElementResponse) ([]*pr
 
 	//Получим общее количество лекарств
 	if i.maxElementCount == 0 {
-		searchedResultsStr := strings.TrimSpace(doc.Find(".results .row.sort .pull-right").Text())
+		searchedResultsStr := strings.TrimSpace(doc.Find(".results .sort .float-right").Text())
 
 		if strings.Contains(searchedResultsStr, "Найдено ") {
 			i.maxElementCount, err = strconv.Atoi(strings.ReplaceAll(searchedResultsStr, "Найдено ", ""))
