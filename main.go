@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/warete/pharm/cmd/drugs_import"
+	"github.com/warete/pharm/cmd/pharm"
 	"log"
 	"os"
 
@@ -9,7 +10,9 @@ import (
 )
 
 func main() {
-	app := &cli.App{
+	pharm.Init()
+
+	cliApp := &cli.App{
 		Name:  "pharm",
 		Usage: "pharm",
 		Commands: []*cli.Command{
@@ -18,10 +21,15 @@ func main() {
 				Usage:  "start app in drugs import mode",
 				Action: drugs_import.Cmd,
 			},
+			{
+				Name:   "app",
+				Usage:  "start app",
+				Action: pharm.Cmd,
+			},
 		},
 	}
 
-	err := app.Run(os.Args)
+	err := cliApp.Run(os.Args)
 	if err != nil {
 		log.Fatal(err)
 	}
