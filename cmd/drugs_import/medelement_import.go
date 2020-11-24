@@ -150,6 +150,9 @@ func (i *MedElementImporter) parseItemsFromData(data *MedElementResponse) ([]*pr
 			if strings.Contains(nodeText, "АТХ:") {
 				drugElement.ATH = strings.ReplaceAll(nodeText, "АТХ: ", "")
 			}
+			if strings.Contains(nodeText, "МНН:") {
+				drugElement.MNN = strings.ReplaceAll(nodeText, "МНН: ", "")
+			}
 		})
 		//Сгенерим uuid
 		drugElement.Guid = uuid.New().String()
