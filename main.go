@@ -3,9 +3,9 @@ package main
 import (
 	"github.com/warete/pharm/cmd/drugs_import"
 	"github.com/warete/pharm/cmd/pharm"
-	"log"
 	"os"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
 

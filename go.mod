@@ -8,5 +8,6 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/jinzhu/gorm v1.9.16
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
+	github.com/sirupsen/logrus v1.7.0
 	github.com/urfave/cli/v2 v2.2.0
 )
