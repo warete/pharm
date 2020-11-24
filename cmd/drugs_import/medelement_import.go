@@ -153,6 +153,7 @@ func (i *MedElementImporter) parseItemsFromData(data *MedElementResponse) ([]*pr
 		})
 		//Сгенерим uuid
 		drugElement.Guid = uuid.New().String()
+		drugElement.Active = true
 		drugs = append(drugs, drugElement)
 	})
 
