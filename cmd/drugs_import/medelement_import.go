@@ -3,9 +3,9 @@ package drugs_import
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
 	"github.com/warete/pharm/cmd/pharm/models/product"
 	"io/ioutil"
 	"net/http"
@@ -32,6 +32,8 @@ func (i *MedElementImporter) Run() error {
 	drugItems := make(map[string]*product.Product)
 	//Мьютекс для конкурентной записи в мапу
 	drugItemsMutex := sync.RWMutex{}
+
+	log.Info("Products parsing start")
 
 	//Получаем первую пачку лекарств и смотрим сколько их всего
 	firstDrugs, err := i.getDrugs(0)
@@ -70,9 +72,39 @@ func (i *MedElementImporter) Run() error {
 		}
 	}
 	wg.Wait()
-	fmt.Println(len(drugItems))
 
-	//TODO: write to DB
+	log.WithFields(log.Fields{
+		"items_cnt": len(drugItems),
+	}).Info("Products parsing done")
+
+	existedProducts, err := product.GetAll()
+	if err != nil {
+		panic(err)
+	}
+	for _, newItem := range drugItems {
+		hasExItem := false
+		for _, exItem := range existedProducts {
+			if newItem.Name == exItem.Name {
+				exItem.Name = newItem.Name
+				exItem.MNN = newItem.MNN
+				exItem.Vendor = newItem.Vendor
+				product.Update(&exItem)
+				log.WithFields(log.Fields{
+					"name": exItem.Name,
+					"guid": exItem.Guid,
+				}).Info("Updated existing product")
+				hasExItem = true
+				break
+			}
+		}
+		if !hasExItem {
+			product.Add(newItem)
+			log.WithFields(log.Fields{
+				"name": newItem.Name,
+				"guid": newItem.Guid,
+			}).Info("Added new product")
+		}
+	}
 
 	return nil
 }
