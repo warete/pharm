@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/google/uuid"
+	"github.com/warete/pharm/cmd/pharm/models/product"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -28,7 +29,7 @@ func NewImporter(serviceUrl string, requestParams map[string]string) (*MedElemen
 //Запускает импорт
 func (i *MedElementImporter) Run() error {
 	//Мапа со всеми лекарствами
-	drugItems := make(map[string]*Drug)
+	drugItems := make(map[string]*product.Product)
 	//Мьютекс для конкурентной записи в мапу
 	drugItemsMutex := sync.RWMutex{}
 
@@ -118,7 +119,7 @@ func (i *MedElementImporter) processData(data string) *MedElementResponse {
 }
 
 //Парсинг лекарств
-func (i *MedElementImporter) parseItemsFromData(data *MedElementResponse) ([]*Drug, error) {
+func (i *MedElementImporter) parseItemsFromData(data *MedElementResponse) ([]*product.Product, error) {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(data.Data))
 	if err != nil {
 		return nil, err
@@ -137,10 +138,10 @@ func (i *MedElementImporter) parseItemsFromData(data *MedElementResponse) ([]*Dr
 	}
 
 	//Ищем товары
-	var drugs []*Drug
+	var drugs []*product.Product
 	doc.Find(".row.results__result").Each(func(i int, s *goquery.Selection) {
-		drugElement := &Drug{}
-		drugElement.Name = s.Find("a.results__title-link").Text()
+		drugElement := &product.Product{}
+		drugElement.Name = strings.TrimSpace(s.Find("a.results__title-link").Text())
 		s.Find("span.text-muted").Each(func(i int, s *goquery.Selection) {
 			nodeText := strings.TrimSpace(s.Text())
 			if strings.Contains(nodeText, "Производитель:") {
@@ -159,7 +160,7 @@ func (i *MedElementImporter) parseItemsFromData(data *MedElementResponse) ([]*Dr
 }
 
 //Обёртка для получения среза лекарств
-func (i *MedElementImporter) getDrugs(skip int) ([]*Drug, error) {
+func (i *MedElementImporter) getDrugs(skip int) ([]*product.Product, error) {
 	customParams := make(map[string]string)
 	for key, value := range i.requestParams {
 		customParams[key] = value
