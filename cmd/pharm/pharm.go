@@ -5,6 +5,8 @@ import (
 	"github.com/urfave/cli/v2"
 	"github.com/warete/pharm/cmd/pharm/database"
 	"github.com/warete/pharm/cmd/pharm/models/product"
+
+	log "github.com/sirupsen/logrus"
 	"strconv"
 )
 
@@ -13,7 +15,10 @@ var app *fiber.App
 func Init() {
 	app = fiber.New()
 
-	database.Init("bin/pharm.db")
+	err := database.Init("bin/pharm.db")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	database.DB.Connection.AutoMigrate(&product.Product{})
 }

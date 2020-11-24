@@ -11,11 +11,12 @@ type DBConn struct {
 
 var DB DBConn
 
-func Init(dbFilePath string) {
+func Init(dbFilePath string) error {
 	DB = DBConn{}
 	var err error
 	DB.Connection, err = gorm.Open("sqlite3", dbFilePath)
 	if err != nil {
-		panic("failed to connect to database")
+		return err
 	}
+	return nil
 }
