@@ -35,14 +35,14 @@ func Cmd(c *cli.Context) error {
 		prod, _ := product.GetById(id)
 		return c.JSON(prod)
 	})
-	api.Post("/products", func(c *fiber.Ctx) error {
+	/*api.Post("/products", func(c *fiber.Ctx) error {
 		prod := new(product.Product)
 		if err := c.BodyParser(prod); err != nil {
 			return c.Status(503).SendString("error")
 		}
 		product.Add(prod)
 		return c.JSON(prod)
-	})
+	})*/
 
 	app.Listen(":3000")
 
