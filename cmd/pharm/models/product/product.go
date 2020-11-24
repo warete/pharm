@@ -32,3 +32,7 @@ func GetById(id int) (Product, error) {
 func Add(prod *Product) {
 	database.DB.Connection.Create(&prod)
 }
+
+func Update(prod *Product) {
+	database.DB.Connection.Save(&prod)
+}
